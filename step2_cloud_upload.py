@@ -27,10 +27,6 @@ step2_cloud_upload.py — 阶段2：云添加（"更改"目录方案）
 import time
 import random
 import logging
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
 
 logger = logging.getLogger("step2_cloud_upload")
 
@@ -55,35 +51,44 @@ def _navigate_back_to_target(engine):
     """
     _random_wait(1.0, 2.0)
 
-    # 尝试1: 面包屑
+    # 尝试1: 面包屑 - 通过 JS XPath 查找点击
     try:
-        bc = WebDriverWait(engine.driver, 5).until(
-            EC.presence_of_element_located((By.XPATH, BREADCRUMB_XPATH))
-        )
-        engine.driver.execute_script("arguments[0].scrollIntoView({block:'center'});", bc)
-        _random_wait(0.3, 0.8)
-        engine.driver.execute_script("arguments[0].click();", bc)
-        _random_wait(2.0, 3.0)
-        logger.info("面包屑回到目标目录")
-        return
+        js = """
+        (() => {
+            const el = document.evaluate(
+                "/html/body/div[1]/div/div/div/div[2]/div[2]/section/div[2]/div[1]/div/div/div/div[3]/div/span[1]/a",
+                document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null
+            ).singleNodeValue;
+            if (el) { el.scrollIntoView({block:'center'}); el.click(); return true; }
+            return false;
+        })()
+        """
+        if engine._cdp.eval(js) == "true":
+            _random_wait(2.0, 3.0)
+            logger.info("面包屑回到目标目录")
+            return
     except Exception:
         pass
 
     # 尝试2: title 定位点击
     try:
-        link = WebDriverWait(engine.driver, 5).until(
-            EC.element_to_be_clickable((By.XPATH, TARGET_DIR_TITLE_XPATH))
-        )
-        link.click()
-        _random_wait(2.0, 3.0)
-        logger.info("title 点击回到目标目录")
-        return
+        js = """
+        (() => {
+            const el = document.querySelector('a[title="在线解压站点食用"]');
+            if (el) { el.click(); return true; }
+            return false;
+        })()
+        """
+        if engine._cdp.eval(js) == "true":
+            _random_wait(2.0, 3.0)
+            logger.info("title 点击回到目标目录")
+            return
     except Exception:
         pass
 
     # 尝试3: URL 跳转
     try:
-        engine.driver.get(TARGET_DIR)
+        engine.navigate_to(TARGET_DIR)
         _random_wait(3.0, 4.0)
         logger.info("URL 跳转回到目标目录")
     except Exception:

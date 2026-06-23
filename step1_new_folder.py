@@ -18,7 +18,6 @@ step1_new_folder.py — 阶段1：新建时间戳文件夹
 import time
 import logging
 import urllib.parse
-from selenium.webdriver.common.by import By
 
 logger = logging.getLogger("step1_new_folder")
 

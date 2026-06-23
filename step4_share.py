@@ -6,7 +6,7 @@ step4_share.py — 阶段4：创建分享链接
   2. 通过 data-file-id 找到对应的 <li>，勾选复选框
   3. 点击"分享"按钮（弹出分享弹窗）
   4. 点击"创建链接"（此时迅雷写入系统剪贴板）
-  5. 用 win32clipboard 读取系统剪贴板获取分享链接
+  5. 用 CDP 劫持/剪贴板 API 读取分享链接（替代 win32clipboard）
   6. 返回
 
 调用者需传入：
@@ -23,12 +23,8 @@ logger = logging.getLogger("step4_share")
 TARGET_DIR = "https://pan.xunlei.com/?path=%2F%E5%9C%A8%E7%BA%BF%E8%A7%A3%E5%8E%8B%E7%AB%99%E7%82%B9%E9%A3%9F%E7%94%A8"
 PAN_BASE = "https://pan.xunlei.com"
 
-try:
-    import win32clipboard
-    HAS_WIN32 = True
-except ImportError:
-    HAS_WIN32 = False
-    logger.warning("win32clipboard 不可用，尝试 pip install pywin32")
+# pywin32 在 Linux 上不可用，改用 CDP 剪贴板机制
+HAS_WIN32 = False
 
 
 def _extract_share_url(raw: str) -> str:
@@ -49,34 +45,25 @@ def _extract_share_url(raw: str) -> str:
     return raw
 
 
-def _get_clipboard_text() -> str:
-    """
-    通过 win32clipboard 读取 Windows 系统剪贴板文本。
-    完全绕过浏览器层，什么 JS/CDP 限制都不管用。
-    """
-    if not HAS_WIN32:
-        return ""
-
-    try:
-        win32clipboard.OpenClipboard()
+def _get_clipboard_text(engine=None) -> str:
+    """通过 CDP 读取浏览器剪贴板内容"""
+    if engine:
         try:
-            data = win32clipboard.GetClipboardData(win32clipboard.CF_UNICODETEXT)
-            if data:
-                text = data.strip()
-                logger.debug(f"win32clipboard 读取成功: {text[:80]}...")
+            text = engine.get_clipboard_via_cdp()
+            if text:
                 return text
-        except TypeError:
-            # 剪贴板不是文本格式
+        except Exception:
             pass
-        finally:
-            win32clipboard.CloseClipboard()
-    except Exception as e:
-        logger.warning(f"win32clipboard 读取失败: {e}")
-
+        try:
+            text = engine.get_copied_link()
+            if text:
+                return text
+        except Exception:
+            pass
     return ""
 
 
-def _retry_get_share_url(max_attempts: int = 4, interval: float = 5.0) -> str:
+def _retry_get_share_url(engine=None, max_attempts: int = 8, interval: float = 3.0) -> str:
     """
     持续监听系统剪贴板，直到拿到合法的迅雷分享链接。
     
@@ -93,7 +80,7 @@ def _retry_get_share_url(max_attempts: int = 4, interval: float = 5.0) -> str:
       str: 合法的迅雷分享链接（空字符串表示超时未获取到）
     """
     for attempt in range(1, max_attempts + 1):
-        raw_text = _get_clipboard_text()
+        raw_text = _get_clipboard_text(engine)
         if raw_text:
             candidate = _extract_share_url(raw_text)
             if candidate and candidate.startswith("https://pan.xunlei.com"):
@@ -149,7 +136,7 @@ def run(engine, file_id: str) -> dict:
 
     # ── 步骤5: 轮询系统剪贴板，直到拿到合法迅雷分享链接 ──
     logger.info("轮询系统剪贴板，等待迅雷写入分享链接...")
-    share_url = _retry_get_share_url(max_attempts=4, interval=5.0)
+    share_url = _retry_get_share_url(engine=engine, max_attempts=4, interval=5.0)
     if share_url:
         result["share_url"] = share_url
         result["success"] = True
@@ -162,7 +149,7 @@ def run(engine, file_id: str) -> dict:
     except Exception as e:
         logger.warning(f"复制链接按钮点击失败: {e}")
 
-    share_url = _retry_get_share_url(max_attempts=4, interval=5.0)
+    share_url = _retry_get_share_url(engine=engine, max_attempts=4, interval=5.0)
     if share_url:
         result["share_url"] = share_url
         result["success"] = True
