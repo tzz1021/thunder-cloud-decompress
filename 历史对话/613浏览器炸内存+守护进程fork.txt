@@ -1,0 +1,22 @@
+**根因找到了：`app.run(debug=True)`。**
+
+Flask 的 debug 模式自带 `use_reloader`，reloader 检测到代码变化（或者甚至 Python 自身文件改动）就会 fork 新进程。问题是：
+1. deamon 每分钟检查一次，发现 `step6_web` 还活着就没事
+2. 但 reloader 自行 spawn 了新进程，旧进程不一定在真正退出
+3. 5:50 浏览器崩溃后，`main_loop.py` 在不停地报错重启，而 `step6_web` 的 debug reloader 也在每次冲突时 fork 新进程
+4. 从凌晨跑到现在，119 个 Flask 实例叠起来了
+
+要处理的话我可以帮你：**一次性杀掉所有 `step6_web` 进程 + 禁用 debug 模式**，让 daemon 重启时只起一个干净的实例。需要动手吗？
+
+
+
+--------------------------关于前端显示-----一个任务显示两行一样的
+修完。改了什么：
+
+**`renderTasks` 函数开头加了 `order` 去重**——按 `order` 建 map，`MY_TASKS` 里有重复 order 的只保留第一条，同步写回 `MY_TASKS` 保证后续操作一致性。
+
+**原因分析：** debug 模式下 119 个 Flask 进程各自有一份 `_fp_tasks` 内存 dict，用户提交后 A 进程注册了 `fp→order`，`refresgQueue` 轮询可能落到 B 进程（没有这个映射），返回空 `myTasks`，而本地 `localStorage` 又有旧数据 → 下次 `refresgQueue` 落到 A 进程拿到了映射 → `map` 里更新了匹配任务但 `serverTasks.forEach` 里的 `some` 判定... 更可能的是 **在 submission 并发场景下，`MY_TASKS.unshift` 被执行了两次**（比如 fetch 网络超时自动重发但按钮解锁了），或者 localStorage 在 crash 前已经写了重复数据进去。
+
+加去重保底，无论什么路径进来的重复都能消掉。
+
+要重启 `step6_web` 才能生效，你手动启的时候别忘了 `python step6_web.py`（现在已经 `debug=False` 了）。

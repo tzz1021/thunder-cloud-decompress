@@ -1,0 +1,30 @@
+14:27:33 [main_loop] 处理 ready 任务 #82: [2026-06-15 14：16：47]
+14:27:33 [task_db] 任务 161 状态更新: decompressing
+14:27:45 [browser_engine] 已点击进入: 在线解压站点食用
+14:27:50 [browser_engine] 已单击: 2026-06-15 14：16：47
+14:27:55 [browser_engine] 已右键文件（图标随机偏移 -8,0）: cbd86274abbd4cb5b352830460bca546.zip
+14:27:56 [browser_engine] 已点击右键菜单: 重命名
+14:27:58 [browser_engine] 已确认命名
+14:27:58 [step3_monitor] 已重命名: cbd86274abbd4cb5b352830460bca546.zip → 2026-06-15 14：16：47.zip
+14:28:01 [browser_engine] 已单击: 2026-06-15 14：16：47.zip
+14:28:04 [browser_engine] 已点击: 解压全部文件
+14:28:12 [browser_engine] 已点击进入: 在线解压站点食用
+14:28:12 [step3_monitor] 文件夹 2026-06-15 14：16：47 处理完毕
+14:28:13 [task_db] 任务 161 状态更新: failed
+14:28:13 [main_loop] ❌ #82 未找到 file_id
+
+逻辑完全清楚了。`_rename_and_decompress` 最后 `navigate_to(PAN_BASE)` + `navigate_to_target_dir()` 之后，直接返回。然后回到 `main_loop.py` 第 245 行——**只等了一个 `time.sleep(2)` 之后**就调 `engine.navigate_to_target_dir()`（第 236 行），然后 `_rename_and_decompress` 内部又有 `time.sleep(1)` + `time.sleep(3)`，加一起不到 10 秒就跑了 `get_folder_info_list()`。100+ 个文件夹铁定没渲染完。
+
+**修改位置：`main_loop.py`，第 239-245 行之间。**
+
+方案：在 `_rename_and_decompress` 返回之后、`get_folder_info_list()` 之前，加一个**长等待 + 带条件的重试**来确保列表加载完毕。
+
+
+
+
+
+
+
+
+
+源码是按照时间戳（文件夹名字）查找的，应该不会涉及file_id

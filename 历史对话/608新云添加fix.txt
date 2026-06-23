@@ -1,0 +1,80 @@
+云添加改用“更改”目录方案，请不要忘记更新映射表
+**第一步点击“更改”class筛选**
+<div class="fileurl-folder__container">
+	<span>保存到:我的云盘</span>
+	<a>更改</a>
+</div>
+第二步，第一步完成后出现class=**td-tree-node is-expanded**的块，这就是  一个目录，可以使一级，二级或者更小级别
+<div class="td-dialog dialog-folder">
+	<div class="td-dialog__header" >...</div>      无有效信息
+	<div class="td-dialog__body" >                 选文件夹区域
+		<div class="file-tree-body-container">
+			<div class="td-tree td-tree--hover" iconclass="file-tree-icon"> 
+			
+			
+				<div class="td-tree-node is-expanded" style="user-select: none;">
+					<div class="td-tree-node_content is-chosen" style="padding-left: 0px; " > </div>     根目录我的云盘
+					<div class="td-tree-node_children">                                                  所有一级目录
+						这里省略很多一级目录，仅有一个作为参考
+						<div class="**td-tree-node is-expanded**" style="user-select: none;">                目标一级目录
+							<div class="td-tree-node__content" style="padding-left: 20px;">              
+								<span class="td-tree-node__expand-icon td-icon-arrow-drop"></span>         箭头
+								<label class="td-checkbox" style="display: none;"><input type="checkbox" class="td-checkbox__inner"></label>  不需要知道
+								<span class="td-tree-node__image-icon" style="background-image: url(&quot;https://backstage-img-ssl.a.88cdn.com/36de21fd06b9ebdd5092b68652b6fc6118e23c2b&quot;);"></span>     图片
+								<span class="td-tree-node__label is-checked">在线解压站点食用</span>            文件夹名字
+							</div> 
+		  					<div class="td-tree-node__children">...</div>                                    属性：当前页面没有子目录
+		  				</div>
+					
+					</div>
+				</div>
+			
+			
+			</div>
+		</div>
+	</div>
+
+
+	<div class="td-dialog__footer" >               确定取消区域
+		<div class="td-dialog-footer">
+			<div class="file-tree-btn-container">
+				<div class="file-tree-btn__new" >...</ div>   新建文件夹
+				<div class="file-tree-btn__normal">
+					<a>确定</a>
+					<a>取消</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+</div>
+检索所有class=td-tree-node is-expanded目录的div[1]/span[3]即可获取文件夹名字，扎到“在线解压站点食用”
+确定目录之后锁定div[1]/span[1]就是文件夹左边的箭头，点击箭头即可发现div[2]出现了子目录，经过比较发现子目录dom结构与一级目录完全一样
+以同样的方式遍历子目录（只查找一层不深入查找），找到名字是“此次任务时间戳”的文件夹，
+随机点击div[1]/span[2],div[1]/span[3],div[1]/label之中的一个减小风控概率，锁定文件夹
+第三步
+优雅地点击确定更改文件夹class=class="file-tree-btn__normal再a[1]
+第四步
+点击确定云添加class看一下下面
+<div class="pan-dialog-btn_container"> 
+	<div class="pan-dialog-btn_default pan-dialog-btn_primary">确定</div>
+	<div class="pan-dialog-btn_default">取消</div>
+</div>
+云添加就完成了
+
+先修改到这里，务必先读懂，读不懂问我，再更新映射表，最后修改源码
+对于面包屑点击失败问题，我需要这次测试结果再判断后续思路
+
+更加详细的dom结构
+<div class="td-dialog_body">
+	<div class="fileurl-input__container" >
+		<p>填写要下载的文件链接</p>
+		<textarea placehoLder="支持HTTP、HTTPS、FTP、磁力链、电驴链接、迅雷链接，换行可同时添加多个"></textarea>
+	</div>
+	<div class="fileurl-folder__container"> 
+		<span>保存到:我的云盘</span>
+		<a>更改</a>
+	</div>
+</div>
+

@@ -1,0 +1,41 @@
+优化不再搞分辨文件和文件夹 开启C:\Users\tzz\.openclaw\workspace\xunlei-api-v3，动手之前选阅读，信息量很大，任何不明白的地方请按照原文顺序指出
+
+进入文件夹“在线解压站点食用”https://pan.xunlei.com/?path=%2F%E5%9C%A8%E7%BA%BF%E8%A7%A3%E5%8E%8B%E7%AB%99%E7%82%B9%E9%A3%9F%E7%94%A8
+之后选新建文件夹
+悬停元素“添加”/html/body/div[1]/div/div/div/div[2]/div[2]/section[1]/div[1]/div[1]/a[1]/span
+根据class=“pan-dropdown-menu-item pan-dropdown-divider”
+定位按钮“新建文件夹”
+通过class=current-*定位填写框，这里的*可能是任意数字
+输入前端返回时间（中文冒号避免非法文件名）完成后点击对钩，class=“xlpfont xlp-action-yes”
+通过检索 title=“填写框里的时间戳” 这种a标签定位文件夹完成左键单击
+建立字典1,文件夹名字与data-file-id静态对应，data-file-id在上述a标签的上级且最低级<li>标签，格式如下
+<li data-file-id="xxx" class="SourceListItem__item--XxpOC normal-item">
+
+后面开始云添加
+完成一次添加任务之后
+回到文件夹“在线解压站点食用”https://pan.xunlei.com/?path=%2F%E5%9C%A8%E7%BA%BF%E8%A7%A3%E5%8E%8B%E7%AB%99%E7%82%B9%E9%A3%9F%E7%94%A8
+这样进入文件夹“在线解压站点食用”里面都是文件夹，每一个文件夹名字都是时间戳
+
+这是第一个文件夹创建时间最近的文件夹 xpath  /html/body/div[1]/div/div/div/div[2]/div[2]/section[2]/ul/li[1]，
+里面/div/div[2]/div[1]/div[2]/a/span  这个是文件夹名字
+里面/div/div[2]/div[2]/div[3]  这个是修改时间
+后端建立数据库（先用字典2替代）每三秒扫描一次所有文件夹读取修改时间，格式[“文件夹名”:“修改时间”]
+发现哪个时间发生了第一次改变就是哪个云添加完成了，做好标记因为只执行一次“重命名+云解压”
+重命名方案，从数据库（字典2）里面获取文件夹名字，压缩包名字改为“文件夹名.zip"
+/html/body/div[1]/div/div/div/div[2]/div[2]/section[2]/ul/li[i]/div/div[2]/div[1]
+只有一个压缩包，i=1，提醒用户仅支持单文件解析，上面定位压缩包，右键找到
+<a class="pan-dropdown-menu-item">重命名</a> 重命名按钮
+通过class=current-*定位填写框，这里的*可能是任意数字
+输入完成后点击对钩，class=“xlpfont xlp-action-yes”
+下一步通过title=“时间戳.zip”单击压缩包本身，按照class=decompress-file-tree-btn__normal点击“解压全部文件”即可直接解压
+停止这个文件夹的修改时间监听字典保留当做日志，立即回到https://pan.xunlei.com/?path=%2F%E5%9C%A8%E7%BA%BF%E8%A7%A3%E5%8E%8B%E7%AB%99%E7%82%B9%E9%A3%9F%E7%94%A8
+点击复选框/html/body/div[1]/div/div/div/div[2]/div[2]/section[2]/ul/li[m]/div/div[1]/div/label/input
+这里的m由<li data-file-id="VOuWrNoIjitslgI1mcn9kb2wA1" class="SourceListItem__item--XxpOC normal-item">这里的data-file-id确定方案是字典1
+通过class="xlpfont xlp-share"定位分享按钮
+通过class=“dialog-web-create-share__button-box”找到div下面只有一个button，点击“创建链接”
+点击class=td-button dialog-web-create-share__button-copy-link  “复制链接”现在就拿到了直接返回前端
+分享这个文件夹，因为解压后的文件也在这个文件夹里面，分享实时更新，用户在云添加完成之后立即拿到分享链接，岂不美哉
+
+我给你写源码的建议，先写一个头文件“code_to_word.json"格式 各种id,class,xpath筛选方法=自然语言文字
+先写出头文件，给我指明位置等我回应再考虑完整源码的书写规范
+

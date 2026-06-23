@@ -1,0 +1,20 @@
+抱歉昨晚电脑关机了没有告诉你，目前急需解决的
+bug1：云添加位置不对，添加到了根目录
+fix1：过于匆忙，进入时间戳文件夹之后需要等待random（5,10）秒才开始悬停--------------你已完成修改
+详细bug1.进入到时间戳文件夹之后唤起“添加链接”，位置不是当前目录而是根目录
+下一步fix1检测到了自动化程序
+ * **第一步：** 彻底关闭你的所有 Chrome 窗口。在命令行（CMD/终端）里通过特定端口带 debug 模式启动 Chrome：
+   ```bash
+   # Windows 示例（确保 Chrome 路径正确，指定一个独立的用户数据目录）
+   chrome.exe --remote-debugging-port=9222 --user-data-dir="C:\selenum_user_data"
+   
+   ```
+ * **第二步：** 此时会弹出一个正常的浏览器，你在里面手动登录好迅雷。
+ * **第三步：** 在你的 Python 脚本中，直接让 Selenium 顺着 9222 端口接管这个浏览器：
+bug2 通过面包屑点击从时间戳文件夹回到“在线站点解压食用”跳转失败
+详细bug2：step2_clou_upload.py步骤5，使用url跳转还是会回到主界面，再次进入一级文件夹会导致监听出现延迟
+fix2：改用点击实现跳转“在线解压站点食用”文件夹，这里是站点截取源码
+/html/body/div[1]/div/div/div/div[2]/div[2]/section/div[2]/div[1]/div/div/div/div[3]/div/span[1]/a
+<span title="在线解压站点食用"class="td-breadcrumb_text">
+	<a href="javascript:; " draggable="false">在线解压站点食用</a>
+</span>

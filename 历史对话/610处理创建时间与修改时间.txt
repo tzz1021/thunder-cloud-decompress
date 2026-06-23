@@ -1,0 +1,25 @@
+什么，从浏览器dom得到的只是时间戳文件夹创建时间而不是修改时间
+
+gemini灵感，os.path.exists？本地化，直接使用openlist+clouddrive2不就好了
+
+挂载问题之前就有，yuanbao提示
+https://i.xunlei.com/xlcaptcha/android.html
+控制台reviewCb(一串)
+然后输出也是控制台
+VERTIFY_SUCC_FUNC {code: 200, msg: '操作成功', creditkey: 'ck0.dLxjF93FbY6IboLQ6xxIjIcVxsbFxeSGFXQvh24qS7gTIc…H0Sd8jmUR75MpGnQFvHYbrbZ2EW3jFKRDuPFZ5w-WdSQHQGBg', type: 'vertifyphone'}
+android.html:56 nativeRecvOperationResult {"roCommand":"android_review","roErrorCode":"0","roData":{"creditkey":"ck0.dLxjF93FbY6IboLQ6xxIjIcVxsbFxeSGFXQvh24qS7gTIcOOwErch0pDTINJxzeLYHIQOvf0ZBsldMk4F6_fdpUVkfLblO95GGb73pMWWqyhbL6_4D4MIi0tXE3QGimaS05UFnid1JZsG79CnmKG2JyL2dlLGSetCY7K5H0Sd8jmUR75MpGnQFvHYbrbZ2EW3jFKRDuPFZ5w-WdSQHQGBg"}} 
+不要到network找
+格式ck0.。。。。
+
+https://yb.tencent.com/s/8xS89ssM7LXx
+
+
+快速模式出现了问题，人眼观察没有文件，cmd日志输出已有文件。
+os读取优化，对于一次云添加任务发送之后，selenium走快速监听的按键点击，点击完之后不再检查dom里的标签而是保持在这次时间戳文件夹内不动，
+如果现在os扫描还在等待期，那么从下一次扫描开始记为第一次额外扫描，扫描之前正常刷新，间隔3秒不变，只扫描这次任务用的时间戳文件夹其余不扫描一共三次额外机会，
+三次里面任意一次发现修改时间发生变化，selenium就会执行 右键 → 重命名。。。一套流程，同时标记dict2，额外扫描停止，继续正常扫描。不理解有疑点马上问，能理解现在就改
+
+1.是的，selenium在10秒内只等待os传来的修改时间是否变化，如果不变化，保持不动无需导航，如果变化了立即执行文件定位 → 右键 一系列流程
+2.os拿最新状态，在常规扫描里面，最后一次常规扫描结束再等3秒开启第一次额外扫描，换而言之，
+不修改是扫描等待逻辑，而是立即切换扫描范围聚焦到这个刚刚创建的文件夹上，给selenium开始等待之后第一次发生的扫描做一个记号，告诉系统这是第一次额外扫描，扫描到这个文件夹修改时间发生变化，通知selenium行动同时扫描范围切换回原来的海量时间戳文件夹
+3.错过所有额外机会认为秒传失败，走原本的os扫描途经，selenium无需额外通知（10秒等待只允许最多3次额外机会），10秒耗尽立即其他行动（回到target_dir，开始给下一个用户创建文件夹）

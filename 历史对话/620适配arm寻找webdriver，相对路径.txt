@@ -1,0 +1,28 @@
+好了，改动完成。总结一下这次修改：
+
+## 改了什么
+
+**1. `browser_engine.py` — 新增 `_find_edge_driver()` 自动检测函数**
+- 优先：项目目录下的 `msedgedriver.exe`
+- fallback：Edge 安装目录下的 msedgedriver（ARM64 兼容，Edge 自动维护正确架构版本）
+- 再 fallback：PATH 环境变量中的 msedgedriver
+- `_launch_browser` 和可选的 debug 模式都走这条路径
+
+**2. 三个测试脚本 `_test_*.py` — 硬编码绝对路径改为相对路径**
+- `_test_check_all.py`、`_test_status.py`、`_migrate_processing.py` 中的 `r'C:\Users\tzz\.openclaw\workspace\xunlei-api-v5\tasks.db'` → `Path(__file__).parent / 'tasks.db'`
+
+---
+
+## 你新电脑上的操作
+
+你跑 `main_loop.py --debug` 时卡住了，因为你是 **ARM64 Windows**。Edgedriver x64 不兼容。最直接的修法：
+
+**方案 A（推荐—不用再下任何东西）：**
+新电脑的 Edge 是 ARM64 原生，Edge 安装目录下自带 msedgedriver。你只需要：
+1. 确认 Edge 已安装
+2. 直接跑就行——`_find_edge_driver()` 会自动找到 `C:\Program Files (ARM)\Microsoft\Edge\Application\msedgedriver.exe`
+
+**方案 B（确保稳定）：**
+去 https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/ 手动下载 **ARM64** 版的 msedgedriver，替换项目目录下的旧文件。
+
+但如果你的场景是 **attach 模式**（`--debug`），其实根本不需要 msedgedriver。问题是新电脑上你启动 Edge debug 模式的命令里要确保端口是 9222。

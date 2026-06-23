@@ -1,0 +1,95 @@
+我用事实说话，所有内容来自网页源码，若不明白请继续提问
+
+疑问1：
+<diy class="PlusMenucontainer--Whix+"style="display:none;”>
+	<div class="pan-dropdown-menu plus-menu" style="width: 180px; margin-top: 20px; top: px;">
+		<a class= pan-dropdown-menu-item">...</a>
+		<a class="pan-dropdown-menu-item">...</a>
+		<a class="pan-dropdown-menu-item pan-dropdown-divider">
+			<i style="background: url("//static-pan.xunlei.com/ nuxt/dist/client/img/plus.63f8e9d.png")0px px/contain no-repeat;"></i>
+			<span>新建文件夹</span>
+		</a>
+		<a class="pan-dropdown-menu-item">...</a>
+疑问2：
+<div class="SourceListItem input--0xLRw"style="top:epx;display: block;">
+	<div class="current-1">
+		<input type="text">                            备注，input是一个表单A form field element should have an id or name attribute
+		<span>
+			<i class="xlpfont xlp-action-yes"></i>
+		</span>
+		<span>
+			<i class="xlpfont xlp-action-no">∞</i>
+		</span>
+	</div>
+</div>
+疑问3：
+单击进入文件夹，url会变，
+改成直接跳转https://pan.xunlei.com/?path=%2F%E5%9C%A8%E7%BA%BF%E8%A7%A3%E5%8E%8B%E7%AB%99%E7%82%B9%E9%A3%9F%E7%94%A8%2F文件夹名字
+是一个更好的选择
+疑问4：
+是这样的https://pan.xunlei.com/?path=%2F%E5%9C%A8%E7%BA%BF%E8%A7%A3%E5%8E%8B%E7%AB%99%E7%82%B9%E9%A3%9F%E7%94%A8%2F123
+这里面只有文件夹，每一个文件夹的名字都是时间戳，严格按照hh:mm:ss，24小时制，不用担心出现名字重复，我会每天清理文件夹
+疑问5：
+扫描所有li[i]的时间，这个服务器承担不住只能通过个人电脑实现，因为用户发送请求会建立新的文件夹，也就是说一个文件夹用户只有一次操作权限，修改时间改变只能是云添加完成
+疑问6：
+<div class="SourceListItem__date--jVz0O">
+          2026-06-07 17:06
+        </div> 这种时间格式很轻松通过py脚本对比
+疑问7：
+做好标记即是写入字典，字典里面一开始是空的，
+执行一次函数f_1（文件夹名字）=文件夹修改时间，之后执行f_2（文件夹名字)=文件夹修改时间，不断调用f_2直到f_2≠f_1终止f_2循环调用
+文件夹名字和f_2就写入字典，写入字典后，执行f_2函数时，读取到字典里面有了这个文件夹名字，f_2终止
+疑问8：
+从li[1]的源码这个样子
+<li data-file-id="VouwIlz5-YwafG4fMsvzPlGYA1" class="SourceListItem__item--XxpOC normal-item"> 
+	<div class="SourceListItem_main--c9HnH">                           这个是li标签里面唯一的div，只是为了flex布局
+		<div class="SourceListItem_checkbox--wP+8J">...</div>          这个对应复选框
+		<div class="SourceListItem_content--b]bFo">               
+			<div class="SourceListItem_title--fq2DG">                  图标文件名
+				<div class="SourceListItem_img--IMuw">...</div>        图标，测试点击图标等同于点击复选框
+				<div class="SourceListItem_name- -y6dVw" >             需要精确点击文件名
+					 <a title="大一第二学期.7z">
+						<span data-v-38077040 class="highlight-text"></ span>
+					< / a>
+					<! ---->< ! ---->< ! ---->< ! ---->
+					<div>...</div>                                      无效信息
+				</div>
+			</div>           
+			<div class="SourceListItem_desc--MDJR2">                    大小日期
+				<div class="SourceListItem_size--bFXwQ">1G </div>
+				<div class="SourceListItem_action--G1vqz">...</div>      无效信息
+				<div class="SourceListItem_date--jVz00">2026-06-07 17:06 </div>
+
+			</div>             
+
+		</div>           
+	</div>
+</li>
+
+疑问9：
+右键会弹出div，层级等同于ul/li里的ul
+<div class="pan-dropdown-menu context-menu" style="left: 317px; top: 258px ; ">
+	<div class="contextMenu_ops--XTyoL">
+		<a class="pan-dropdown-menu-item">下载</a>
+		<a class="pan-dropdown-menu-item">在线解压</a>
+		<a class="pan-dropdown-menu-item">分享</a> 
+		<a class="pan-dropdown-menu-item">复制到</a> 
+		<a class="pan-dropdown-menu-item">移动到</a>
+		< ! ---->
+		<! ---->
+		<a class="pan-dropdown-menu-item">删除</a> 
+		<a class="pan-dropdown-menu-item">重命名</a>
+	</div>
+</div>
+疑问10：
+点击复制之后会出现在剪切板上，为了严管盗链，在不加js注入的条件下无法直接从devtools“元素”获取分享链接
+疑问11：
+是的没错
+
+
+
+
+
+
+
+

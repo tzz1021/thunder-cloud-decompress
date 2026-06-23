@@ -1,0 +1,82 @@
+从开机自启vbs，知道开机进程太多了，不方便观察和调试，静默启动日志都好找
+换成批处理，开机后手动运行
+
+杀死9222pid
+等待浏览器启动
+绑定py进程
+restart_once_a_day.py  守护进程启动 → main_loop和web同步启动
+
+
+step6反复误杀
+问题清楚了。看 `restart_once_a_day.py` 里的 `kill_old_instances`：
+
+```python
+result = _sp.run(
+    ['wmic', 'Process', 'Where', f'CommandLine like "%{script_name}%"', 'Get', 'ProcessId'],
+```
+
+`kill_old_instances("step6_web.py")` 会匹配所有命令行包含 `step6_web.py` 的进程，包括 **manager 自己**的 `subprocess.Popen` 调用链——当 manager 启动子进程后，`wmic` 搜到的 PID 里包含了刚启动的子进程，然后立刻 SIGTERM 掉它。
+
+子进程一退出，manager 分钟循环检测到就重启，重启后又立刻被 kill，无限循环。
+
+修这个很简单，把 `kill_old_instances` 里的 `this_pid` 比较逻辑改成**排除本进程及其子进程**：
+Microsoft Windows [版本 10.0.19045.6466]
+(c) Microsoft Corporation。保留所有权利。
+
+C:\Users\tzz\.openclaw\workspace\xunlei-api-v5>python C:\Users\tzz\.openclaw\workspace\xunlei-api-v5\restart_once_a_day.py
+10:33:50 [manager] ==================================================
+10:33:50 [manager] [启动] 解析站管理器启动
+10:33:50 [manager] 工作目录: C:\Users\tzz\.openclaw\workspace\xunlei-api-v5
+10:33:50 [manager] Manager 日志: run_2026-06-14.log
+10:33:50 [manager] 主循环日志: main_loop_2026-06-14.log
+10:33:50 [manager] Web 日志: step6_web_2026-06-14.log
+10:33:50 [manager] ==================================================
+10:33:50 [manager] 已杀掉旧进程 main_loop.py: PID=383972
+10:33:50 [manager] main_loop 已启动 (PID=64784)
+10:33:50 [manager] step6_web 已启动 (PID=46716)
+10:33:50 [manager] 距下次轮换: 48369 秒 (2026-06-15 00:00:00)
+10:34:50 [manager] 子进程 PID=64784 已退出 (code=15)，重启中...
+10:34:51 [manager] 已杀掉旧进程 main_loop.py: PID=43904
+10:34:51 [manager] main_loop 已启动 (PID=86660)
+10:34:51 [manager] 子进程 PID=46716 已退出 (code=15)，重启中...
+10:34:51 [manager] 已杀掉旧进程 step6_web.py: PID=28132
+10:34:51 [manager] 已杀掉旧进程 step6_web.py: PID=133452
+10:34:51 [manager] 已杀掉旧进程 step6_web.py: PID=133532
+10:34:51 [manager] 已杀掉旧进程 step6_web.py: PID=134696
+10:34:51 [manager] 已杀掉旧进程 step6_web.py: PID=129452
+10:34:51 [manager] step6_web 已启动 (PID=118468)
+10:35:51 [manager] 子进程 PID=64784 已退出 (code=15)，重启中...
+10:35:51 [manager] 已杀掉旧进程 main_loop.py: PID=86660
+10:35:51 [manager] main_loop 已启动 (PID=201984)
+10:35:51 [manager] 子进程 PID=46716 已退出 (code=15)，重启中...
+10:35:51 [manager] step6_web 已启动 (PID=197648)
+10:35:51 [manager] 子进程 PID=86660 已退出 (code=15)，重启中...
+10:35:52 [manager] step6_web 已启动 (PID=204596)
+10:35:52 [manager] 子进程 PID=118468 已退出 (code=15)，重启中...
+10:35:52 [manager] step6_web 已启动 (PID=201004)
+10:35:52 [manager] 子进程 PID=197648 已退出 (code=15)，重启中...
+10:35:52 [manager] step6_web 已启动 (PID=204956)
+10:35:52 [manager] 子进程 PID=204596 已退出 (code=15)，重启中...
+10:35:52 [manager] step6_web 已启动 (PID=205452)
+10:35:52 [manager] 子进程 PID=201004 已退出 (code=15)，重启中...
+10:35:53 [manager] step6_web 已启动 (PID=205416)
+10:35:53 [manager] 子进程 PID=204956 已退出 (code=15)，重启中...
+10:35:53 [manager] step6_web 已启动 (PID=207472)
+10:35:53 [manager] 子进程 PID=205452 已退出 (code=15)，重启中...
+10:35:53 [manager] step6_web 已启动 (PID=201600)
+10:35:53 [manager] 子进程 PID=205416 已退出 (code=15)，重启中...
+10:35:54 [manager] 已杀掉旧进程 step6_web.py: PID=201600
+10:35:54 [manager] step6_web 已启动 (PID=193528)
+10:35:54 [manager] 子进程 PID=207472 已退出 (code=15)，重启中...
+10:35:54 [manager] step6_web 已启动 (PID=206456)
+10:35:54 [manager] 子进程 PID=201600 已退出 (code=15)，重启中...
+10:35:54 [manager] step6_web 已启动 (PID=198024)
+10:35:54 [manager] 子进程 PID=193528 已退出 (code=15)，重启中...
+10:35:55 [manager] step6_web 已启动 (PID=208128)
+10:35:55 [manager] 子进程 PID=206456 已退出 (code=15)，重启中...
+10:35:55 [manager] step6_web 已启动 (PID=206232)
+10:35:55 [manager] 子进程 PID=198024 已退出 (code=15)，重启中...
+10:35:55 [manager] step6_web 已启动 (PID=206444)
+10:35:55 [manager] 子进程 PID=208128 已退出 (code=15)，重启中...
+10:35:56 [manager] step6_web 已启动 (PID=204148)
+

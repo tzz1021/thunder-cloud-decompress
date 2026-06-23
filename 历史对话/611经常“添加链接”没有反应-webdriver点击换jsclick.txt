@@ -1,0 +1,90 @@
+检查”点击 添加链接 按钮“”填写用户直链url“的相关源码，描述容错机制，浏览器卡在添加链接按钮存在，但是没有弹出新窗口提供url输入框。
+日志：17:19:39[browser_engine]已点击添加链接
+17:19:41[step2 cloud upload]步骤2:填写URL: https://mv.microsoftper...
+
+
+云添加弹窗还是没有蹦出来，导致url找不到写入位置
+18:13:56 [step2_cloud_upload] 步骤1: 打开云添加弹窗
+18:14:02 [browser_engine] 已悬停添加按钮
+18:14:04 [browser_engine] 已点击添加链接
+18:14:08 [step2_cloud_upload] 步骤2: 填写 URL: https://ykj-eos-wx2-01.eos-wuxi-3.cmecloud.cn/6d7ee0298b4e447ab7b7d2791a6964f608...
+18:14:08 [task_db] 任务 21 状态更新: failed
+18:14:08 [main_loop] ❌ #21 云添加异常: Message: element not interactable
+  (Session info: MicrosoftEdge=149.0.4022.52); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementnotinteractableexception
+Stacktrace:
+        msedgedriver!GetHandleVerifier [0x7ff6b32e3cd5+e305]
+        msedgedriver!GetHandleVerifier [0x7ff6b32e3d34+e364]
+        msedgedriver!(No symbol) [0x7ff6b2c951ae]
+        msedgedriver!(No symbol) [0x7ff6b2cd7054]
+        msedgedriver!(No symbol) [0x7ff6b2cfe92a]
+        msedgedriver!(No symbol) [0x7ff6b2cd5017]
+        msedgedriver!(No symbol) [0x7ff6b2cd4f1d]
+        msedgedriver!(No symbol) [0x7ff6b2cd5017]
+        msedgedriver!(No symbol) [0x7ff6b2d19a68]
+        msedgedriver!(No symbol) [0x7ff6b2cd485c]
+        msedgedriver!(No symbol) [0x7ff6b2cd3ab6]
+        msedgedriver!(No symbol) [0x7ff6b2cd4683]
+        msedgedriver!(No symbol) [0x7ff6b2f20371]
+        msedgedriver!(No symbol) [0x7ff6b2f1cac8]
+        msedgedriver!(No symbol) [0x7ff6b2f2d555]
+        msedgedriver!GetHandleVerifier [0x7ff6b32ffc81+2a2b1]
+        msedgedriver!GetHandleVerifier [0x7ff6b3308a26+33056]
+        msedgedriver!GetHandleVerifier [0x7ff6b32eb794+15dc4]
+        msedgedriver!GetHandleVerifier [0x7ff6b32eb8b5+15ee5]
+        msedgedriver!GetHandleVerifier [0x7ff6b32d7ec3+24f3]
+        KERNEL32!BaseThreadInitThunk [0x7ffa4bbc7374+14]
+        ntdll!RtlUserThreadStart [0x7ffa4bf7cc91+21]
+		
+		
+		
+		
+		
+		
+点击“添加链接”按钮出错，点击“添加文件夹”也出错了，看来反自动化机制出现了，测试组只有3个人啊，目前任务序号是才二十多
+找一下现在的“添加文件夹”按钮寻找逻辑，“添加链接”按钮寻找逻辑
+
+
+18:19:09 [task_db] 任务 22 状态更新: processing
+18:19:09 [step1_new_folder] 进入在线解压站点食用目录
+18:19:18 [browser_engine] 已点击进入: 在线解压站点食用
+18:19:18 [step1_new_folder] 悬停添加按钮
+18:19:22 [browser_engine] 已悬停添加按钮
+18:19:22 [step1_new_folder] 点击新建文件夹
+18:19:23 [browser_engine] 已点击新建文件夹
+18:19:23 [step1_new_folder] 输入文件夹名称: 2026-06-11 18：18：33
+18:19:26 [task_db] 任务 22 状态更新: failed
+18:19:26 [main_loop] ❌ #22 云添加异常: Message: element not interactable
+  (Session info: MicrosoftEdge=149.0.4022.52); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementnotinteractableexception
+Stacktrace:
+        msedgedriver!GetHandleVerifier [0x7ff6b32e3cd5+e305]
+        msedgedriver!GetHandleVerifier [0x7ff6b32e3d34+e364]
+        msedgedriver!(No symbol) [0x7ff6b2c951ae]
+        msedgedriver!(No symbol) [0x7ff6b2cd7054]
+        msedgedriver!(No symbol) [0x7ff6b2cfe92a]
+        msedgedriver!(No symbol) [0x7ff6b2cd5017]
+        msedgedriver!(No symbol) [0x7ff6b2cd4f1d]
+        msedgedriver!(No symbol) [0x7ff6b2cd5017]
+        msedgedriver!(No symbol) [0x7ff6b2d19a68]
+        msedgedriver!(No symbol) [0x7ff6b2cd485c]
+        msedgedriver!(No symbol) [0x7ff6b2cd3ab6]
+        msedgedriver!(No symbol) [0x7ff6b2cd4683]
+        msedgedriver!(No symbol) [0x7ff6b2f20371]
+        msedgedriver!(No symbol) [0x7ff6b2f1cac8]
+        msedgedriver!(No symbol) [0x7ff6b2f2d555]
+        msedgedriver!GetHandleVerifier [0x7ff6b32ffc81+2a2b1]
+        msedgedriver!GetHandleVerifier [0x7ff6b3308a26+33056]
+        msedgedriver!GetHandleVerifier [0x7ff6b32eb794+15dc4]
+        msedgedriver!GetHandleVerifier [0x7ff6b32eb8b5+15ee5]
+        msedgedriver!GetHandleVerifier [0x7ff6b32d7ec3+24f3]
+        KERNEL32!BaseThreadInitThunk [0x7ffa4bbc7374+14]
+        ntdll!RtlUserThreadStart [0x7ffa4bf7cc91+21]				
+龙虾回复都是元素被遮挡，实用js注入去除遮挡
+
+
+我看到的实际浏览器情况，按钮点下去了倒是就和没点一个样子
+点击“添加链接”按钮plusmenu应该收回，打开新的小窗口                                 实际上plusmenu还在，新的窗口人眼看不见
+点击“新建文件夹”按钮plusmenu也应该收回，<ul>里面出现一个新的文件夹<li>              实际上plusmenu还在，dom里面没有新的<li>标签出现
+我的想法，触发了反自动化机制，点击按钮之后和不点击一个效果
+
+这次 PlusMenu 的操作全部走 JS 事件派发，不经过 Selenium 的 WebDriver 协议。
+ 

@@ -1,0 +1,98 @@
+有时候刚添加好的压缩包解压失败
+点一下重试就好了，仅在找不到“解压全部文件”按钮时触发这个逻辑
+
+重试按钮
+<div class="dialog-decompress-status__footer">
+	<button class="td-button active">
+	< ! ---->
+	“确定”
+	</button>
+	<button class="td-button primary" >
+	<! ---->
+	“重试”
+	</button>
+</ div>
+
+
+615修理这个东西
+好的呢，另一个问题。有时候刚添加好的压缩包解压失败，严重怀疑大厂镇压自动程序
+点一下“重试”之后等5-10秒（测试了4个文件5秒绝对够了，反检测用5-10秒）可能再出现“解压全部文件”，仅在找不到“解压全部文件”按钮时触发这个逻辑（3次机会）
+要是失败了数据库现在是是failed么？改成bad-format，前端显示“不可解压”会好一点，
+内测组告诉俺提交了请求直接挂机打游戏去了，回来一看失败就问我咋回事，我说“临门一脚失败”
+
+重试按钮（dialog-decompress-status_footer类名唯一出现优先定位这个）
+<div class="dialog-decompress-status__footer">
+	<button class="td-button active">
+	< ! ---->
+	“确定”
+	</button>
+	<button class="td-button primary" >
+	<! ---->
+	“重试”
+	</button>
+</ div>
+
+
+改完了，汇总一下三处改动：
+
+**1. `browser_engine.py` — `click_decompress()` 增加重试逻辑**
+- 先正常找"解压全部文件"按钮，找到直接点
+- 找不到 → 找 `div.dialog-decompress-status__footer` 里的"重试"按钮 → 点重试
+- 随机等 20-30 秒（反检测）→ 再找"解压全部文件"
+- 最多 3 次，3 次都失败才抛异常
+
+**2. `main_loop.py` — ready 任务失败状态改为 `bad-format`**
+- 分享失败、找不到 file_id、处理异常 → 全部写 `bad-format` 而非 `failed`
+
+**3. `task_db.py` — `get_queue_summary` 增加 `bad-format` 统计**
+- 队列摘要和日志都能正常显示"不可解压"的计数
+
+第一处检查L765-815
+
+
+
+
+
+
+
+616新的重试按钮
+还是原来那个
+日志
+11:58:48 [step3_monitor] 已重命名: 202504220146185aac89fefcdc42ba156dd7903ca71d28.zip → 2026-06-16 11：56：49.zip
+11:58:50 [browser_engine] 已单击: 2026-06-16 11：56：49.zip
+11:58:54 [browser_engine] 未找到解压全部文件按钮（第 1 次），可能是解压失败弹窗，尝试点重试
+11:58:57 [browser_engine] 未找到重试按钮，弹窗可能已自动关闭
+11:59:03 [browser_engine] 未找到解压全部文件按钮（第 2 次），可能是解压失败弹窗，尝试点重试
+11:59:06 [browser_engine] 未找到重试按钮，弹窗可能已自动关闭
+11:59:12 [browser_engine] 未找到解压全部文件按钮（第 3 次），可能是解压失败弹窗，尝试点重试
+11:59:12 [task_db] 任务 174 状态更新: bad-format
+11:59:12 [main_loop] ❌ #4 处理异常: 尝试 3 次后仍未找到解压全部文件按钮
+
+
+
+617处理了
+
+
+---
+
+## 根本原因
+
+一个隐藏了**10 天**的 bug。`browser_engine.py` 第 902 行：
+
+```python
+class DecompressFailedError(Exception):
+    """解压彻底失败，文件不可解压（非重试能解决的）"""
+    pass
+
+    def click_checkbox_for_li(self, li_element):
+    ...
+```
+
+`pass` 之后 Python 不会自动结束类定义。后续所有 4 空格缩进的方法 (`click_checkbox_for_li`, `click_share_button`, `click_create_share`, `click_copy_link`, `get_folder_info_list`, `get_li_by_file_id`, `close`) 全部被 Python 解析成了 `DecompressFailedError` 类的静态方法，而不是 `BrowserEngine` 的实例方法。
+
+所以：
+- 之前 `#1-#7` 的 crash 不只是"进程热更新"的问题——**即使重启了子进程 `get_folder_info_list` 也不存在**
+- 你 F12 看 `BrowserEngine` 类里确实没有这些方法
+- 所有分享相关的功能全都没绑在 `BrowserEngine` 上，只是你从来没走到分享那一步（解压就崩了）
+
+现在修好了，等 manager 自动重启后试试 #193 的人工补救或者直接跑新任务看看能不能走到分享。

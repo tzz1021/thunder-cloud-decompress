@@ -1,0 +1,228 @@
+bug1：反复出现这个报错，导致下一次循环提起开启，反复执行一开始的“进入target_dir”
+[main_loop] 刷新失败: Message:
+Stacktrace:
+        msedgedriver!GetHandleVerifier [0x7ff64b273cd5+e305]
+        msedgedriver!GetHandleVerifier [0x7ff64b273d34+e364]
+        msedgedriver!GetHandleVerifier [0x7ff64b8f6d2a+69135a]
+        msedgedriver!(No symbol) [0x7ff64ac6e3aa]
+        msedgedriver!(No symbol) [0x7ff64ac6e625]
+        msedgedriver!(No symbol) [0x7ff64acabd97]
+        msedgedriver!(No symbol) [0x7ff64ac65017]
+        msedgedriver!(No symbol) [0x7ff64aca9a68]
+        msedgedriver!(No symbol) [0x7ff64ac6485c]
+        msedgedriver!(No symbol) [0x7ff64ac63ab6]
+        msedgedriver!(No symbol) [0x7ff64ac64683]
+        msedgedriver!(No symbol) [0x7ff64aeb0371]
+        msedgedriver!(No symbol) [0x7ff64aeacac8]
+        msedgedriver!(No symbol) [0x7ff64aebd555]
+        msedgedriver!GetHandleVerifier [0x7ff64b28fc81+2a2b1]
+        msedgedriver!GetHandleVerifier [0x7ff64b298a26+33056]
+        msedgedriver!GetHandleVerifier [0x7ff64b27b794+15dc4]
+        msedgedriver!GetHandleVerifier [0x7ff64b27b8b5+15ee5]
+        msedgedriver!GetHandleVerifier [0x7ff64b267ec3+24f3]
+        KERNEL32!BaseThreadInitThunk [0x7ffa4bbc7374+14]
+        ntdll!RtlUserThreadStart [0x7ffa4bf7cc91+21]
+bug2，本地读取不及时，clouddrive2（127.0.0.1:19798）如果不刷新只刷新W:\WebDAV\online_prase_site属于无效刷新
+
+容错机制，
+绕过cd2，使用alist提供的接口、
+
+# 获取某个文件/目录信息
+
+## OpenAPI Specification
+
+```yaml
+openapi: 3.0.1
+info:
+  title: ''
+  description: ''
+  version: 1.0.0
+paths:
+  /api/fs/get:
+    post:
+      summary: 获取某个文件/目录信息
+      deprecated: false
+      description: ''
+      tags:
+        - fs
+        - fs
+        - alist Copy/fs
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: true
+          example: '{{alist_token}}'
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path:
+                  type: string
+                  title: 路径
+                password:
+                  type: string
+                  title: 密码
+                page:
+                  type: integer
+                per_page:
+                  type: integer
+                refresh:
+                  type: boolean
+                  title: 强制 刷新
+              required:
+                - path
+                - password
+              x-apifox-orders:
+                - path
+                - password
+                - page
+                - per_page
+                - refresh
+            example:
+              path: /t
+              password: ''
+              page: 1
+              per_page: 0
+              refresh: false
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    title: 状态码
+                  message:
+                    type: string
+                    title: 信息
+                  data:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        title: 文件名
+                      size:
+                        type: integer
+                        title: 大小
+                      is_dir:
+                        type: boolean
+                        title: 是否是文件夹
+                      modified:
+                        type: string
+                        title: 修改时间
+                      sign:
+                        type: string
+                        title: 签名
+                      thumb:
+                        type: string
+                        title: 缩略图
+                      type:
+                        type: integer
+                        title: 类型
+                      raw_url:
+                        type: string
+                        title: 原始url
+                      readme:
+                        type: string
+                        title: 说明
+                      provider:
+                        type: string
+                      related:
+                        type: 'null'
+                      created:
+                        type: string
+                        title: 创建时间
+                      hashinfo:
+                        type: string
+                      hash_info:
+                        type: 'null'
+                      header:
+                        type: string
+                    required:
+                      - name
+                      - size
+                      - is_dir
+                      - modified
+                      - created
+                      - sign
+                      - thumb
+                      - type
+                      - hashinfo
+                      - hash_info
+                      - raw_url
+                      - readme
+                      - header
+                      - provider
+                      - related
+                    x-apifox-orders:
+                      - name
+                      - size
+                      - is_dir
+                      - modified
+                      - sign
+                      - thumb
+                      - type
+                      - raw_url
+                      - readme
+                      - provider
+                      - related
+                      - created
+                      - hashinfo
+                      - hash_info
+                      - header
+                required:
+                  - code
+                  - message
+                  - data
+                x-apifox-orders:
+                  - code
+                  - message
+                  - data
+              example:
+                code: 200
+                message: success
+                data:
+                  name: Alist V3.md
+                  size: 2618
+                  is_dir: false
+                  modified: '2024-05-17T16:05:36.4651534+08:00'
+                  created: '2024-05-17T16:05:29.2001008+08:00'
+                  sign: ''
+                  thumb: ''
+                  type: 4
+                  hashinfo: 'null'
+                  hash_info: null
+                  raw_url: http://127.0.0.1:5244/p/local/Alist%20V3.md
+                  readme: ''
+                  header: ''
+                  provider: Local
+                  related: null
+          headers: {}
+          x-apifox-name: 成功
+      security: []
+      x-apifox-folder: fs
+      x-apifox-status: released
+      x-run-in-apifox: https://app.apifox.com/web/project/6849786/apis/api-327955415-run
+components:
+  schemas: {}
+  securitySchemes: {}
+servers: []
+security: []
+
+```
+
+
+
+
+调试方法
+先debug方式启动edge 9222
+再python step6
+python main_loop.py --debug
