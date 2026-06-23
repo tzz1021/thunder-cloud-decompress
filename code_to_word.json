@@ -1,0 +1,284 @@
+{
+  "_meta": {
+    "title": "迅雷解析站 Selenium 操作映射表",
+    "description": "记录所有 DOM 元素的定位方式、操作含义和文本描述",
+    "version": "1.0",
+    "note": "问号=不确定项，需要你确认后修改"
+  },
+
+  "urls": {
+    "pan_base": "https://pan.xunlei.com",
+    "target_dir": "https://pan.xunlei.com/?path=%2F%E5%9C%A8%E7%BA%BF%E8%A7%A3%E5%8E%8B%E7%AB%99%E7%82%B9%E9%A3%9F%E7%94%A8",
+    "child_dir_template": "https://pan.xunlei.com/?path=%2F%E5%9C%A8%E7%BA%BF%E8%A7%A3%E5%8E%8B%E7%AB%99%E7%82%B9%E9%A3%9F%E7%94%A8%2F{foldername}"
+  },
+
+  "selectors": {
+    "add_button": {
+      "description": "悬停后弹出 PlusMenu 的'添加'按钮",
+      "method": "xpath",
+      "value": "/html/body/div[1]/div/div/div/div[2]/div[2]/section[1]/div[1]/div[1]/a[1]/span",
+      "action": "hover",
+      "note": "需要先 hover 让 PlusMenu 出现（display:none → flex）"
+    },
+    "new_folder_in_menu": {
+      "description": "PlusMenu 中的'新建文件夹'菜单项",
+      "method": "class",
+      "value": "pan-dropdown-menu-item pan-dropdown-divider",
+      "child_text": "新建文件夹",
+      "action": "click",
+      "note": "实际匹配 <a class='pan-dropdown-menu-item pan-dropdown-divider'><span>新建文件夹</span></a>"
+    },
+    "rename_input": {
+      "description": "新建文件夹/重命名时弹出的文本输入框（同一个控件类型）",
+      "method": "class_prefix",
+      "value": "current-",
+      "tag": "input",
+      "action": "send_keys",
+      "note": "外层容器 class='current-1'，里面 <input type='text'>，class 每次可能不同但都以 current- 开头"
+    },
+    "rename_confirm_yes": {
+      "description": "输入框旁边的确认对钩按钮",
+      "method": "class",
+      "value": "xlpfont xlp-action-yes",
+      "action": "click",
+      "note": "这是 <i> 标签的 class，点击后确认命名"
+    },
+    "rename_cancel_no": {
+      "description": "输入框旁边的取消叉号按钮",
+      "method": "class",
+      "value": "xlpfont xlp-action-no",
+      "action": "click"
+    },
+    "file_link_by_title": {
+      "description": "通过 title 属性定位文件或文件夹的 <a> 标签",
+      "method": "xpath",
+      "value": "//a[@title='{title}']",
+      "action": "click",
+      "note": "title 可以是文件夹名字或压缩包名字"
+    },
+    "folder_list_item": {
+      "description": "文件列表中的单个条目（<li>），包含 data-file-id 属性",
+      "method": "xpath",
+      "value": "/html/body/div[1]/div/div/div/div[2]/div[2]/section[2]/ul/li[{index}]",
+      "note": "li 标签结构：<li data-file-id='xxx' class='SourceListItem__item--XxpOC normal-item'>"
+    },
+    "folder_name_span": {
+      "description": "文件夹列表项中显示名字的 <span>",
+      "method": "xpath",
+      "value": "./div/div[2]/div[1]/div[2]/a/span",
+      "note": "相对 li 的路径"
+    },
+    "folder_date_span": {
+      "description": "文件夹列表项中显示修改时间的 <div>",
+      "method": "xpath",
+      "value": "./div/div[2]/div[2]/div[3]",
+      "note": "相对 li 的路径，文本格式如 '2026-06-07 17:06'"
+    },
+    "pan_list": {
+      "description": "文件列表容器，云添加完成后子目录内已有文件的标志",
+      "method": "css_selector",
+      "value": "ul.pan-list",
+      "action": "查找",
+      "note": "如果 ul.pan-list 存在说明文件已在，无需等待修改时间变化。检索发现全站只有这一个元素用 pan-list 作为 class 名称"
+    },
+    "file_item_div": {
+      "description": "文件条目（非文件夹），进入子目录后只有一个压缩包",
+      "method": "xpath",
+      "value": "/html/body/div[1]/div/div/div/div[2]/div[2]/section[2]/ul/li[1]/div/div[2]/div[1]",
+      "note": "只有一个压缩包，i=1。提醒用户仅支持单文件解析"
+    },
+    "right_click_menu": {
+      "description": "右键菜单容器",
+      "method": "class",
+      "value": "pan-dropdown-menu context-menu",
+      "note": "右键时弹出，层级等于 ul/li 中的 ul"
+    },
+    "right_click_menu_item": {
+      "description": "右键菜单中的具体操作项，文本匹配",
+      "method": "xpath",
+      "value": "//div[contains(@class,'contextMenu_ops')]/a[@class='pan-dropdown-menu-item' and text()='{text}']",
+      "note": "文本选项：下载、在线解压、分享、复制到、移动到、删除、重命名"
+    },
+    "decompress_btn": {
+      "description": "压缩包弹窗中的'解压全部文件'按钮",
+      "method": "class",
+      "value": "decompress-file-tree-btn__normal",
+      "note": "更精确是：//div[contains(@class,'decompress-file-tree-btn')]/a[text()='解压全部文件']"
+    },
+    "checkbox_input": {
+      "description": "文件/文件夹前面的复选框",
+      "method": "xpath",
+      "value": "./div/div[1]/div/label/input",
+      "note": "相对 li 的路径，用于选中文件夹以创建分享"
+    },
+    "share_button": {
+      "description": "选中文件后顶部的分享按钮",
+      "method": "class",
+      "value": "xlpfont xlp-share",
+      "action": "click"
+    },
+    "create_share_button": {
+      "description": "分享弹窗中的'创建链接'按钮",
+      "method": "xpath",
+      "value": "//div[contains(@class,'dialog-web-create-share__button-box')]/button[1]",
+      "action": "click",
+      "note": "外层 div.dialog-web-create-share__button-box，直接点其中的第一个 <button>"
+    },
+    "copy_share_link": {
+      "description": "创建链接成功后出现的'复制链接'按钮",
+      "method": "class",
+      "value": "td-button dialog-web-create-share__button-copy-link",
+      "action": "click",
+      "note": "点击后链接写入剪贴板。获取方式：JS 注入读取剪贴板或读取页面上隐藏的输入框？"
+    },
+    "plus_menu_container": {
+      "description": "悬停添加后弹出的 PlusMenu",
+      "method": "class",
+      "value": "PlusMenu_container--whjx+",
+      "note": "初始 display:none，hover 添加按钮后 display:flex/block"
+    },
+
+    "cloud_upload_textarea": {
+      "description": "云添加弹窗中填写 URL 的 textarea",
+      "method": "xpath",
+      "value": "//textarea[contains(@placeholder,'HTTP')]",
+      "action": "send_keys",
+      "note": "placeholder='支持HTTP、HTTPS、FTP、磁力链、电驴链接、迅雷链接，换行可同时添加多个'"
+    },
+    "change_folder_link": {
+      "description": "云添加弹窗中'保存到:我的云盘'旁边的'更改'链接",
+      "method": "xpath",
+      "value": "//div[contains(@class,'fileurl-folder__container')]/a[text()='更改']",
+      "action": "click",
+      "note": "点击后弹出树形目录选择框，用于选择保存到哪个文件夹"
+    },
+    "tree_node_by_label": {
+      "description": "树形目录中通过 label 文本定位节点",
+      "method": "xpath",
+      "value": "//div[contains(@class,'td-tree-node')]/div[contains(@class,'td-tree-node__content')]/span[contains(@class,'td-tree-node__label') and text()='{label}']/ancestor::div[contains(@class,'td-tree-node')][1]",
+      "action": "复合操作",
+      "note": "返回最外层的 td-tree-node div，后续可操作其子元素：span[1]=展开箭头, span[2]=图标, span[3]=label, label/input=复选框"
+    },
+    "tree_node_expand_arrow": {
+      "description": "树形目录节点左边展开/折叠箭头",
+      "method": "xpath",
+      "value": "./div[contains(@class,'td-tree-node__content')]/span[1]",
+      "note": "相对外层 td-tree-node div 的路径，点击展开子目录"
+    },
+    "tree_node_label": {
+      "description": "树形目录节点显示文件夹名的 span",
+      "method": "xpath",
+      "value": "./div[contains(@class,'td-tree-node__content')]/span[3]",
+      "note": "相对外层 td-tree-node div 的路径，文本即文件夹名"
+    },
+    "tree_node_select": {
+      "description": "选中树形目录中的文件夹（随机选择文件夹名/图标/复选框以减小风控）",
+      "method": "随机点击",
+      "value": "从 span[2](图标), span[3](label), label(复选框) 中随机选一个点击",
+      "note": "相对 td-tree-node__content div 的路径"
+    },
+    "tree_confirm_button": {
+      "description": "树形目录选择框的'确定'按钮",
+      "method": "class",
+      "value": "file-tree-btn__normal",
+      "action": "click a[1]",
+      "note": "位于弹窗 footer，<div class='file-tree-btn__normal'><a>确定</a><a>取消</a></div>"
+    },
+    "cloud_upload_final_confirm": {
+      "description": "云添加弹窗底部的最终'确定'按钮",
+      "method": "class",
+      "value": "pan-dialog-btn_primary",
+      "action": "click",
+      "note": "位于 <div class='pan-dialog-btn_container'> 内，class='pan-dialog-btn_default pan-dialog-btn_primary'"
+    }
+  },
+
+  "data_attributes": {
+    "file_id": {
+      "description": "每个文件/文件夹的唯一 ID，存于 <li data-file-id='xxx'>",
+      "dict_name": "字典1",
+      "mapping": "文件夹名 → data-file-id"
+    }
+  },
+
+  "dicts": {
+    "dict1": {
+      "name": "文件夹名 → data-file-id 映射",
+      "purpose": "通过文件夹名（时间戳）找到对应的 data-file-id，后续用于勾选和分享"
+    },
+    "dict2": {
+      "name": "文件夹名 → 修改时间 映射（监听用）",
+      "purpose": "每 3 秒扫描所有文件夹，记录修改时间，发现变化即云添加完成"
+    },
+    "dict3": {
+      "name": "已完成处理的文件夹集合",
+      "purpose": "标记哪些文件夹已经处理过（重命名+解压），不再重复操作"
+    }
+  },
+
+  "flow_steps": {
+    "1_new_folder": {
+      "description": "进入在线解压站点食用目录 → 新建时间戳文件夹",
+      "substeps": [
+        "GET target_dir",
+        "hover add_button",
+        "click new_folder_in_menu",
+        "send_keys to rename_input（前端时间戳，中文冒号）",
+        "click rename_confirm_yes",
+        "dict1[时间戳] = 获取刚创建文件夹的 data-file-id",
+        "GET child_dir_template（进入该文件夹）"
+      ]
+    },
+    "2_cloud_upload": {
+      "description": "在文件夹内执行云添加（点击'更改'选择目录方案）",
+      "substeps": [
+        "hover add_button → click 添加链接 → 云添加弹窗出现",
+        "send_keys to textarea（直链 URL）",
+        "click change_folder_link（'更改'链接）→ 树形目录弹出",
+        "在树形目录中找到 '在线解压站点食用' → 点击展开箭头",
+        "在其子目录中找到时间戳文件夹名 → 随机点击图标/label/复选框选中",
+        "click tree_confirm_button（'确定'关闭目录选择）",
+        "click cloud_upload_final_confirm（'确定'提交云添加）",
+        "回到 target_dir（通过面包屑或 URL 跳转）"
+      ]
+    },
+    "3_monitor_and_decompress": {
+      "description": "扫描所有文件夹的修改时间，找到完成下载的 → 重命名 → 解压",
+      "substeps": [
+        "每 3 秒扫描所有 li，读 folder_name_span 和 folder_date_span，更新 dict2",
+        "对比 dict2 中每个文件夹的修改时间，如果与上次不同 → 云添加完成",
+        "进入该文件夹（GET child_dir_template）",
+        "右键 file_item_div → 点击 right_click_menu_item('重命名')",
+        "send_keys to rename_input（文件夹名.zip）",
+        "click rename_confirm_yes",
+        "通过 file_link_by_title('文件夹名.zip') 单击压缩包",
+        "点击 decompress_btn('解压全部文件')",
+        "标记 dict3[文件夹名] = True"
+      ]
+    },
+    "4_create_share": {
+      "description": "回到上级目录 → 勾选文件夹 → 创建分享链接",
+      "substeps": [
+        "GET target_dir",
+        "找到 dict1[文件夹名] 对应的 li（通过 data-file-id）",
+        "click checkbox_input（勾选）",
+        "click share_button",
+        "click create_share_button",
+        "click copy_share_link",
+        "获取分享链接 → 返回前端"
+      ]
+    }
+  },
+
+  "pending_questions": [
+    "(已解决 2026-06-10) 秒传 bug → step3_monitor 新增快速检查逻辑：进入子目录查找 ul.pan-list，存在即直接走重命名→解压，不存在才退回到修改时间监听",
+    "(已解决 2026-06-08) 复制链接 → 注入 JS 拦截 Clipboard.writeText / document.execCommand",
+    "(已解决 2026-06-07) 树形目录选择方案",
+    "(已解决 2026-06-07) 云解压 API 普通会员不可用，改用 Selenium"
+  ],
+
+  "clipboard_hijack_js": {
+    "description": "注入此 JS 拦截所有写剪贴板操作，捕获分享链接",
+    "source": "Object.defineProperty(navigator, 'clipboard', {\n  get: () => ({\n    writeText: (text) => {\n      window.__copiedLink = text;\n      return Promise.resolve();\n    },\n    readText: () => Promise.resolve(window.__copiedLink || '')\n  })\n});\n\n// 同时也拦截 document.execCommand\nconst origExec = document.execCommand;\ndocument.execCommand = function(command, ...args) {\n  return origExec.apply(this, [command, ...args]);\n};"
+  }
+}
