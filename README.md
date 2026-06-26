@@ -62,3 +62,4 @@ restart_once_a_day.py每天定时24:00重启一次服务，清理数据库
 
 # ackonwledged
 [openlist](https://github.com/OpenListTeam/OpenList)
+[xuexitong_shuake](https://github.com/Mortal004/Xuexitong_shuake)
