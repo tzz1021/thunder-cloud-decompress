@@ -174,6 +174,50 @@ def daily_rotate():
 
     logger.info("✅ 每日轮换完成")
 
+# ─── 驱动选择（弹窗） ──────────────────────────────────────
+
+def select_driver_interactive() -> str:
+    """
+    弹窗让用户手动选择 msedgedriver.exe → 连接 9222 测试 → 失败则循环重选。
+
+    返回: 测试通过的 msedgedriver.exe 完整路径
+    """
+    import tkinter as tk
+    from tkinter import filedialog
+    from selenium.webdriver.edge.service import Service as EdgeService
+    from selenium.webdriver.edge.options import Options as EdgeOptions
+    from selenium import webdriver
+
+    root = tk.Tk()
+    root.withdraw()
+    root.attributes("-topmost", True)  # 置顶
+
+    while True:
+        path = filedialog.askopenfilename(
+            title="选择 msedgedriver.exe（必须匹配 9222 端口的浏览器版本）",
+            filetypes=[("EdgeDriver", "msedgedriver.exe")],
+            parent=root
+        )
+        if not path:
+            logger.error("用户取消选择驱动，退出")
+            sys.exit(1)
+
+        # 测试驱动能否正常连接 9222
+        try:
+            options = EdgeOptions()
+            options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
+            _service = EdgeService(executable_path=path)
+            _d = webdriver.Edge(service=_service, options=options)
+            _d.quit()
+            logger.info(f"✅ 驱动测试通过: {path}")
+            root.destroy()
+            return path
+        except Exception as e:
+            logger.error(f"❌ 驱动测试失败: {e}")
+            logger.error("请确保选择的驱动匹配当前9222端口浏览器版本和架构")
+            # 继续循环，重新弹窗
+
+
 # ─── 主循环 ────────────────────────────────────────────────
 
 def main():
@@ -184,6 +228,12 @@ def main():
     logger.info(f"主循环日志: main_loop_{_log_today}.log")
     logger.info(f"Web 日志: step6_web_{_log_today}.log")
     logger.info("=" * 50)
+
+    # ── 弹窗选驱动（必须通过测试才能继续） ──
+    _driver_path = select_driver_interactive()
+    logger.info(f"使用驱动: {_driver_path}")
+    # 通过环境变量传递给子进程
+    os.environ["XUNLEI_DRIVER_PATH"] = _driver_path
 
     # 启动子进程
     start_main_loop()

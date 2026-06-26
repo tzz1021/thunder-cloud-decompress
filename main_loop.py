@@ -401,11 +401,13 @@ if __name__ == "__main__":
     init_db()
 
     # 初始化浏览器
+    _driver_env = os.environ.get("XUNLEI_DRIVER_PATH", None)
     engine = BrowserEngine(
         headless=args.headless,
         attach=args.debug,
         debug_port=args.port,
-        browser_type=args.browser
+        browser_type=args.browser,
+        driver_path=_driver_env
     )
 
     try:
