@@ -59,3 +59,6 @@ restart_once_a_day.py每天定时24:00重启一次服务，清理数据库
 更多测试数据以及站点体验位置，更新日志这里不再列出，仅作存档不打算公开
 当大家都能看到的时候说明项目已经黄了
     https://gcnk5l8dhg5s.feishu.cn/docx/HSg5dSYMzog8FnxwZV6cLTMJnWe?from=from_copylink
+
+# ackonwledged
+[openlist](https://github.com/OpenListTeam/OpenList)
