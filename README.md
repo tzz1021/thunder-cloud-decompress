@@ -55,6 +55,13 @@ restart_once_a_day.py每天定时24:00重启一次服务，清理数据库
 停止浏览器，停止前端，启动浏览器，启动restart_once_a_day.py（显示python manager）
 无头模式bug频出，有服务器的开有头即可
 
+main_loop找到ALIST_TOKEN
+
+        cd your/path/to/alist
+        ./alist admin token
+
+附近的有一个portbushi5244自行更换
+
 
 更多测试数据以及站点体验位置，更新日志这里不再列出，仅作存档不打算公开
 当大家都能看到的时候说明项目已经黄了
